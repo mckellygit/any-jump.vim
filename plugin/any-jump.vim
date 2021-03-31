@@ -256,6 +256,11 @@ fu! s:VimPopupFilter(popup_winid, key) abort
   let bufnr = winbufnr(a:popup_winid)
   let ib    = s:GetCurrentInternalBuffer()
 
+  " return cursor to origial pos
+  if !has("nvim")
+    call winrestview(g:saveview)
+  endif
+
   if a:key ==# "j"
     call popup_filter_menu(a:popup_winid, a:key)
     return 1
@@ -264,11 +269,83 @@ fu! s:VimPopupFilter(popup_winid, key) abort
     call popup_filter_menu(a:popup_winid, a:key)
     return 1
 
+  elseif a:key ==# "\<BS>"
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    return 1
+
+  elseif a:key ==# "\<C-b>"
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    return 1
+
+  elseif a:key ==# "\<C-u>"
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    return 1
+
+  elseif a:key ==# "\<PageUp>"
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    call popup_filter_menu(a:popup_winid, "k")
+    return 1
+
   elseif a:key ==# "\<Up>"
     call popup_filter_menu(a:popup_winid, "k")
     return 1
 
+  elseif a:key ==# "\<C-k>"
+    call popup_filter_menu(a:popup_winid, "k")
+    return 1
+
+  elseif a:key ==# "\<Space>"
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    return 1
+
+  elseif a:key ==# "\<C-f>"
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    return 1
+
+  elseif a:key ==# "\<C-d>"
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    return 1
+
+  elseif a:key ==# "\<PageDown>"
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    call popup_filter_menu(a:popup_winid, "j")
+    return 1
+
   elseif a:key ==# "\<Down>"
+    call popup_filter_menu(a:popup_winid, "j")
+    return 1
+
+  elseif a:key ==# "\<C-j>"
     call popup_filter_menu(a:popup_winid, "j")
     return 1
 
@@ -337,6 +414,11 @@ endfu
 fu! s:Jump(...) abort range
   let lang = lang_map#get_language_from_filetype(&l:filetype)
   let keyword = ''
+
+  " remember origial cursor pos
+  if !has("nvim")
+    let g:saveview = winsaveview()
+  endif
 
   let opts = {}
   if a:0
