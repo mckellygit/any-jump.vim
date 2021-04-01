@@ -227,6 +227,12 @@ fu! s:CreateNvimUi(internal_buffer) abort
   call t:any_jump.JumpToFirstOfType('link', 'definitions')
 endfu
 
+function! s:PopupClosed(id, result)
+  if a:result == -1
+    "echo "Popup closed from <C-c>"
+  endif
+endfunction
+
 fu! s:CreateVimUi(internal_buffer) abort
   let l:Filter   = function("s:VimPopupFilter")
 
@@ -240,116 +246,285 @@ fu! s:CreateVimUi(internal_buffer) abort
         \"maxheight":  height,
         \"minwidth":   width,
         \"maxwidth":   width,
-        \"border":     [0,0,0,0],
+        \"border":     [],
+        \"borderchars":['─', '│', '─', '│', '┌', '┐', '┘', '└'],
         \"padding":    [0,1,1,1],
         \"filter":     Filter,
+        \"callback":   function("s:PopupClosed"),
         \})
 
   let a:internal_buffer.popup_winid = popup_winid
   let a:internal_buffer.vim_bufnr   = winbufnr(popup_winid)
 
   call a:internal_buffer.RenderUi()
-  call a:internal_buffer.JumpToFirstOfType('link', 'definitions')
+  if !has("nvim")
+    " mck - dont jump here
+    "call a:internal_buffer.JumpToFirstOfType('link', 'definitions')
+    call popup_filter_menu(popup_winid, "j")
+  endif
 endfu
 
 fu! s:VimPopupFilter(popup_winid, key) abort
   let bufnr = winbufnr(a:popup_winid)
   let ib    = s:GetCurrentInternalBuffer()
 
-  " return cursor to origial pos
-  if !has("nvim")
-    call winrestview(g:saveview)
-  endif
+  " ---------------
 
-  if a:key ==# "j"
+  if a:key ==# "k"
     call popup_filter_menu(a:popup_winid, a:key)
     return 1
 
-  elseif a:key ==# "k"
+  elseif a:key == "\<Up>"
+    call popup_filter_menu(a:popup_winid, "k")
+    return 1
+
+  elseif a:key == "\<M-k>"
+    call win_execute(a:popup_winid, "silent normal! 5k")
+    return 1
+
+  elseif a:key == "\<F30>" "<M-k>
+    call win_execute(a:popup_winid, "silent normal! 5k")
+    return 1
+
+  elseif a:key ==# "K"
+    call win_execute(a:popup_winid, "silent normal! \<C-y>k")
+    return 1
+
+  elseif a:key == "\<M-K>"
+    call win_execute(a:popup_winid, "silent normal! \<C-y>k")
+    return 1
+
+  elseif a:key == "\<F26>" "<M-S-k>
+    call win_execute(a:popup_winid, "silent normal! \<C-y>k")
+    return 1
+
+  elseif a:key == "\<C-k>"
+    call win_execute(a:popup_winid, "silent normal! \<C-y>k")
+    return 1
+
+  elseif a:key == "\<C-Up>"
+    call win_execute(a:popup_winid, "silent normal! \<C-y>k")
+    return 1
+
+  elseif a:key == "\<M-Up>"
+    call win_execute(a:popup_winid, "silent normal! \<C-y>k")
+    return 1
+
+  elseif a:key == "\<M-C-K>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<F28>" "<M-C-k>
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<M-BS>"
+    call win_execute(a:popup_winid, "silent normal! \<C-y>k")
+    return 1
+
+  elseif a:key == "\<S-F30>" "<M-BS>
+    call win_execute(a:popup_winid, "silent normal! \<C-y>k")
+    return 1
+
+  elseif a:key == "\<BS>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<C-b>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<C-u>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<PageUp>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<C-PageUp>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<C-PageUp>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<S-F21>" "<C-PageUp>
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<M-PageUp>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<S-F23>" "<M-PageUp>
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<C-S-PageUp>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<S-F22>" "<C-S-PageUp>
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<S-PageUp>"
+    call win_execute(a:popup_winid, "silent normal! \<C-y>k")
+    return 1
+
+  elseif a:key == "\<S-F17>" "<S-PageUp>
+    call win_execute(a:popup_winid, "silent normal! \<C-y>k")
+    return 1
+
+  elseif a:key == "\<M-S-PageUp>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  elseif a:key == "\<S-F19>" "<M-S-PageUp>
+    call win_execute(a:popup_winid, "silent normal! 5\<C-y>5k")
+    return 1
+
+  " ---------------
+
+  elseif a:key ==# "j"
     call popup_filter_menu(a:popup_winid, a:key)
     return 1
 
-  elseif a:key ==# "\<BS>"
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    return 1
-
-  elseif a:key ==# "\<C-b>"
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    return 1
-
-  elseif a:key ==# "\<C-u>"
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    return 1
-
-  elseif a:key ==# "\<PageUp>"
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    call popup_filter_menu(a:popup_winid, "k")
-    return 1
-
-  elseif a:key ==# "\<Up>"
-    call popup_filter_menu(a:popup_winid, "k")
-    return 1
-
-  elseif a:key ==# "\<C-k>"
-    call popup_filter_menu(a:popup_winid, "k")
-    return 1
-
-  elseif a:key ==# "\<Space>"
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
+  elseif a:key == "\<Down>"
     call popup_filter_menu(a:popup_winid, "j")
     return 1
 
-  elseif a:key ==# "\<C-f>"
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
+  elseif a:key == "\<M-j>"
+    call win_execute(a:popup_winid, "silent normal! 5j")
     return 1
 
-  elseif a:key ==# "\<C-d>"
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
+  elseif a:key == "\<F31>" "<M-j>
+    call win_execute(a:popup_winid, "silent normal! 5j")
     return 1
 
-  elseif a:key ==# "\<PageDown>"
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
-    call popup_filter_menu(a:popup_winid, "j")
+  elseif a:key ==# "J"
+    call win_execute(a:popup_winid, "silent normal! \<C-e>j")
     return 1
 
-  elseif a:key ==# "\<Down>"
-    call popup_filter_menu(a:popup_winid, "j")
+  elseif a:key == "\<M-J>"
+    call win_execute(a:popup_winid, "silent normal! \<C-e>j")
     return 1
 
-  elseif a:key ==# "\<C-j>"
-    call popup_filter_menu(a:popup_winid, "j")
+  elseif a:key == "\<F23>" "<M-S-j>
+    call win_execute(a:popup_winid, "silent normal! \<C-e>j")
     return 1
 
-  elseif a:key ==# "p" || a:key ==# "\<TAB>"
+  elseif a:key == "\<C-j>"
+    call win_execute(a:popup_winid, "silent normal! \<C-e>j")
+    return 1
+
+  elseif a:key == "\<C-Down>"
+    call win_execute(a:popup_winid, "silent normal! \<C-e>j")
+    return 1
+
+  elseif a:key == "\<M-Down>"
+    call win_execute(a:popup_winid, "silent normal! \<C-e>j")
+    return 1
+
+  elseif a:key == "\<M-C-O>" "(subst for <M-C-j> ...)
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<F29>" "<M-C-o> (subst for <M-C-j> ...)
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<M-Space>"
+    call win_execute(a:popup_winid, "silent normal! \<C-e>j")
+    return 1
+
+  elseif a:key == "\<S-F29>" "<M-Space>
+    call win_execute(a:popup_winid, "silent normal! \<C-e>j")
+    return 1
+
+  elseif a:key == "\<Space>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<C-f>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<C-d>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<PageDown>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<C-PageDown>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<S-F24>" "<C-PageDown>
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<M-PageDown>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<S-F26>" "<M-PageDown>
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<C-S-PageDown>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<S-F25>" "<C-S-PageDown>
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<S-PageDown>"
+    call win_execute(a:popup_winid, "silent normal! \<C-e>j")
+    return 1
+
+  elseif a:key == "\<S-F18>" "<S-PageDown>
+    call win_execute(a:popup_winid, "silent normal! \<C-e>j")
+    return 1
+
+  elseif a:key == "\<M-S-PageDown>"
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  elseif a:key == "\<S-F20>" "<M-S-PageDown>
+    call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  " ---------------
+
+  " cannot do 2-char popup filter input for gg ...
+
+  elseif a:key == "\<C-Home>"
+    call win_execute(a:popup_winid, "silent normal! gg")
+    return 1
+
+  elseif a:key == "\<C-End>"
+    call win_execute(a:popup_winid, "silent normal! G")
+    return 1
+
+  " ---------------
+
+  elseif a:key == "\<M-C-P>"
+    call g:AnyJumpHandlePreview()
+    return 1
+
+  elseif a:key == "\<S-F27>" "<M-C-p>
+    call g:AnyJumpHandlePreview()
+    return 1
+
+  " ---------------
+
+  elseif a:key == "p" || a:key == "\<TAB>"
     call g:AnyJumpHandlePreview()
     return 1
 
@@ -377,7 +552,7 @@ fu! s:VimPopupFilter(popup_winid, key) abort
     call g:AnyJumpToFirstLink()
     return 1
 
-  elseif a:key ==# "\<CR>" || a:key ==# 'o'
+  elseif a:key == "\<CR>" || a:key == 'o'
     call g:AnyJumpHandleOpen()
     return 1
 
@@ -393,9 +568,10 @@ fu! s:VimPopupFilter(popup_winid, key) abort
     call g:AnyJumpHandleOpen('vsplit')
     return 1
 
-  elseif a:key ==# "q"
-        \ || a:key ==# "\<ESC>"
-        \ || a:key ==# 'x'
+  elseif a:key == "q"
+        \ || a:key == "\<ESC>"
+        \ || a:key == 'x'
+    " close from <C-c> cannot be caught here, but can be handled in s:PopupClosed()
     call g:AnyJumpHandleClose()
     return 1
   endif
@@ -412,13 +588,10 @@ fu! s:GetCurrentInternalBuffer() abort
 endfu
 
 fu! s:Jump(...) abort range
+  redraw!
+  echo " "
   let lang = lang_map#get_language_from_filetype(&l:filetype)
   let keyword = ''
-
-  " remember origial cursor pos
-  if !has("nvim")
-    let g:saveview = winsaveview()
-  endif
 
   let opts = {}
   if a:0
@@ -447,9 +620,21 @@ fu! s:Jump(...) abort range
   let ib.source_win_id            = winnr()
   let ib.grouping_enabled         = g:any_jump_grouping_enabled
 
-  if type(lang) == v:t_string
-    let ib.definitions_grep_results = search#SearchDefinitions(lang, keyword)
-  endif
+  redraw!
+  echo "AnyJump: parsing ..."
+
+  try
+    if type(lang) == v:t_string
+      let ib.definitions_grep_results = search#SearchDefinitions(lang, keyword)
+    endif
+  catch /^Vim\%((\a\+)\)\=:/
+    redraw!
+    echo "AnyJump: parsing cancelled"
+    sleep 900m
+    redraw!
+    echo " "
+    return
+  endtry
 
   if g:any_jump_references_enabled || len(ib.definitions_grep_results) == 0
     let ib.usages_opened       = v:true
@@ -465,6 +650,9 @@ fu! s:Jump(...) abort range
     endfor
   endif
 
+  redraw!
+  echo " "
+
   " assign any-jump internal buffer to current tab
   let t:any_jump = ib
 
@@ -472,6 +660,8 @@ fu! s:Jump(...) abort range
 endfu
 
 fu! s:JumpBack() abort
+  redraw!
+  echo " "
   if exists('t:any_jump') && t:any_jump.previous_bufnr
     let new_previous = bufnr()
     execute(':buf ' . t:any_jump.previous_bufnr)
@@ -480,6 +670,8 @@ fu! s:JumpBack() abort
 endfu
 
 fu! s:JumpLastResults() abort
+  redraw!
+  echo " "
   if exists('t:any_jump') " TODO: check for buffer visibility here
     let t:any_jump.source_win_id = winnr()
     call s:CreateUi(t:any_jump)
@@ -493,6 +685,8 @@ endfu
 let s:available_open_actions = [ 'open', 'split', 'vsplit', 'tab' ]
 
 fu! g:AnyJumpHandleOpen(...) abort
+  redraw!
+  echo " "
   let ui          = s:GetCurrentInternalBuffer()
   let action_item = ui.GetItemByPos()
   let open_action = 'open'
@@ -542,6 +736,11 @@ fu! g:AnyJumpHandleOpen(...) abort
       " open new file
       execute 'edit ' . action_item.data.path . '|:' . action_item.data.line_number
     endif
+
+    " add current location to jump list
+    execute "silent normal! ^"
+    call setpos("''", getpos("."))
+
   elseif action_item.type == 'more_button'
     call g:AnyJumpLoadNextBatchResults()
   endif
@@ -619,7 +818,10 @@ fu! g:AnyJumpHandleReferences() abort
     call ui.EndUiTransaction()
     call ui.RemoveGarbagedLines()
 
-    call ui.JumpToFirstOfType('link', 'definitions')
+    if !has("nvim")
+      " mck - dont jump here
+      "call ui.JumpToFirstOfType('link', 'definitions')
+    endif
 
     let ui.usages_opened = v:false
 
@@ -648,7 +850,10 @@ fu! g:AnyJumpHandleReferences() abort
   call ui.RenderUiUsagesList(ui.usages_grep_results, start_ln)
   call ui.EndUiTransaction()
 
-  call ui.JumpToFirstOfType('link', 'usages')
+  if !has("nvim")
+    " mck - dont jump here
+    "call ui.JumpToFirstOfType('link', 'usages')
+  endif
 endfu
 
 fu! g:AnyJumpToFirstLink() abort
