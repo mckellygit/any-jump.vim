@@ -592,6 +592,7 @@ fu! s:Jump(...) abort range
   echo " "
   let lang = lang_map#get_language_from_filetype(&l:filetype)
   let keyword = ''
+  let search_meth = 'gr'
 
   let opts = {}
   if a:0
@@ -601,8 +602,17 @@ fu! s:Jump(...) abort range
   if has_key(opts, 'is_visual')
     let x = getpos("'<")[2]
     let y = getpos("'>")[2]
-
     let keyword = getline(line('.'))[ x - 1 : y - 1]
+  elseif has_key(opts, 'is_visual.l')
+    let x = getpos("'<")[2]
+    let y = getpos("'>")[2]
+    let keyword = getline(line('.'))[ x - 1 : y - 1]
+    let search_meth = ".l"
+  elseif has_key(opts, 'is_visual.r')
+    let x = getpos("'<")[2]
+    let y = getpos("'>")[2]
+    let keyword = getline(line('.'))[ x - 1 : y - 1]
+    let search_meth = ".r"
   elseif has_key(opts, 'is_arg')
     let keyword = opts['is_arg']
   else
@@ -613,42 +623,58 @@ fu! s:Jump(...) abort range
     return
   endif
 
-  let ib = internal_buffer#GetClass().New()
-
-  let ib.keyword                  = keyword
-  let ib.language                 = lang
-  let ib.source_win_id            = winnr()
-  let ib.grouping_enabled         = g:any_jump_grouping_enabled
+  if has_key(opts, 'search_meth')
+    let search_meth = opts['search_meth']
+  endif
 
   redraw!
-  echo "AnyJump: parsing ..."
+  echo "AnyJump: parsing: " . keyword
 
   try
+
+    let ib = internal_buffer#GetClass().New()
+
+    let ib.keyword                  = keyword
+    let ib.language                 = lang
+    let ib.source_win_id            = winnr()
+    let ib.grouping_enabled         = g:any_jump_grouping_enabled
+
     if type(lang) == v:t_string
-      let ib.definitions_grep_results = search#SearchDefinitions(lang, keyword)
+      "let ib.definitions_grep_results = search#SearchDefinitions(lang, keyword, search_meth)
+      let def_grep_results = search#SearchDefinitions(lang, keyword, search_meth)
+      if def_grep_results.text == "Aborted-cmd"
+          throw "Aborted-cmd"
+      endif
+      let ib.definitions_grep_results = def_grep_results
     endif
-  catch /^Vim\%((\a\+)\)\=:/
+
+    if g:any_jump_references_enabled || len(ib.definitions_grep_results) == 0
+      let ib.usages_opened       = v:true
+      let usages_grep_results    = search#SearchUsages(ib, search_meth)
+      if usages_grep_results.text == "Aborted-cmd"
+          throw "Aborted-cmd"
+      endif
+      let ib.usages_grep_results = []
+
+      " filter out results found in definitions
+      for result in usages_grep_results
+        if index(ib.definitions_grep_results, result) == -1
+          " not effective? ( TODO: deletion is more memory effective)
+          call add(ib.usages_grep_results, result)
+        endif
+      endfor
+    endif
+
+  catch /Aborted-cmd/
+
     redraw!
     echo "AnyJump: parsing cancelled"
     sleep 900m
     redraw!
     echo " "
     return
+
   endtry
-
-  if g:any_jump_references_enabled || len(ib.definitions_grep_results) == 0
-    let ib.usages_opened       = v:true
-    let usages_grep_results    = search#SearchUsages(ib)
-    let ib.usages_grep_results = []
-
-    " filter out results found in definitions
-    for result in usages_grep_results
-      if index(ib.definitions_grep_results, result) == -1
-        " not effective? ( TODO: deletion is more memory effective)
-        call add(ib.usages_grep_results, result)
-      endif
-    endfor
-  endif
 
   redraw!
   echo " "
@@ -1117,7 +1143,11 @@ endfu
 
 " Commands
 command! AnyJump call s:Jump()
+command! AnyJumpDirLocal call s:Jump({"search_meth": ".l"})
+command! AnyJumpDirRecur call s:Jump({"search_meth": ".r"})
 command! -range AnyJumpVisual call s:Jump({"is_visual": v:true})
+command! -range AnyJumpVisualDirLocal call s:Jump({"is_visual.l": v:true})
+command! -range AnyJumpVisualDirRecur call s:Jump({"is_visual.r": v:true})
 command! -nargs=1 AnyJumpArg call s:Jump({"is_arg": <f-args>})
 command! AnyJumpBack call s:JumpBack()
 command! AnyJumpLastResults call s:JumpLastResults()

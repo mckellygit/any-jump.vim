@@ -104,6 +104,18 @@ endfor
 
 " End of compilation
 
+function! s:Runsystem(cmd)
+    "echom "s:Runsystem(" . a:cmd . ")"
+    let result = system(a:cmd)
+    "let mcmd = a:cmd . ' > /tmp/foo'
+    "execute 'AsyncRun -mode=system -name=anyjump ' . mcmd
+    "let result = readfile('/tmp/foo','')[1:-]
+    if v:shell_error
+        return "Aborted-cmd"
+    endif
+    return result
+endfunction
+
 fu! s:GetRgFiletype(lang) abort
   if has_key(s:rg_filetype_convertion_map, a:lang)
     return s:rg_filetype_convertion_map[a:lang]
@@ -126,7 +138,7 @@ fu! search#GetSearchEngineFileTypeSpecifier(engine, language) abort
   if has_key(s:non_standard_ft_extensions_map_compiled, a:language)
     if a:engine == 'rg'
       let file_lists_cmd = 'rg --files | rg ' . s:non_standard_ft_extensions_map_compiled[a:language]
-      let files = split(system(file_lists_cmd), "\n")
+      let files = split(s:Runsystem(file_lists_cmd), "\n")
       let cmd   = join(map(files, {_,fname -> ('-f ' . fname)}), ' ')
     elseif a:engine == 'ag'
       let cmd = '-G ' . s:non_standard_ft_extensions_map_compiled[a:language]
@@ -181,19 +193,19 @@ fu! search#GetCurrentSearchEngine() abort
   return search_engine
 endfu
 
-fu! search#SearchUsages(internal_buffer) abort
+fu! search#SearchUsages(internal_buffer, meth) abort
   let search_engine = search#GetCurrentSearchEngine()
 
   if search_engine == 'rg'
-    let grep_results = s:RunRgUsagesSearch(a:internal_buffer.language, a:internal_buffer.keyword)
+    let grep_results = s:RunRgUsagesSearch(a:internal_buffer.language, a:internal_buffer.keyword, a:meth)
   elseif search_engine == 'ag'
-    let grep_results = s:RunAgUsagesSearch(a:internal_buffer.language, a:internal_buffer.keyword)
+    let grep_results = s:RunAgUsagesSearch(a:internal_buffer.language, a:internal_buffer.keyword, a:meth)
   end
 
   return grep_results
 endfu
 
-fu! search#SearchDefinitions(lang, keyword) abort
+fu! search#SearchDefinitions(lang, keyword, meth) abort
   let patterns      = []
   let lang          = lang_map#find_definitions(a:lang)
   let search_engine = search#GetCurrentSearchEngine()
@@ -226,9 +238,9 @@ fu! search#SearchDefinitions(lang, keyword) abort
   let regexp = "\"(" . regexp . ")\""
 
   if search_engine == 'rg'
-    let grep_results = s:RunRgDefinitionSearch(a:lang, regexp)
+    let grep_results = s:RunRgDefinitionSearch(a:lang, regexp, a:meth)
   elseif search_engine == 'ag'
-    let grep_results = s:RunAgDefinitionSearch(a:lang, regexp)
+    let grep_results = s:RunAgDefinitionSearch(a:lang, regexp, a:meth)
   end
 
   return grep_results
@@ -292,7 +304,7 @@ fu! search#RunRegexpSpecs() abort
                       \ . test_re . "\""
               endif
 
-              let raw_results = system(cmd)
+              let raw_results = s:Runsystem(cmd)
 
               if index(invalid_exist_statues[spec_type], v:shell_error) != -1
                 call add(errors, 'FAILED ' . engine . ' ' . lang . ' ' . spec_type . ' -- result: ' . string(raw_results) . "; spec: " . string(spec_string)  . '; re: ' . string(test_re))
@@ -322,40 +334,85 @@ fu! s:NewGrepResult() abort
   return { "line_number": 0, "path": 0, "text": 0 }
 endfu
 
-fu! s:RunRgDefinitionSearch(language, patterns) abort
+function! s:find_git_root()
+    let gdir = ''
+    if executable("git")
+        " in a submodule dir this returns git root, otherwise returns empty
+        let gdir = s:Runsystem('git rev-parse --show-superproject-working-tree 2> /dev/null')[:-2]
+        if empty(gdir)
+            " not in a submodule, returns git root
+            let gdir = s:Runsystem('git rev-parse --show-toplevel 2> /dev/null')[:-2]
+        endif
+    endif
+    return gdir
+endfunction
+
+fu! s:RunRgDefinitionSearch(language, patterns, meth) abort
   let rg_ft = s:GetRgFiletype(a:language)
 
   let cmd = s:rg_base_cmd . ' -t ' . rg_ft
   let cmd = cmd . s:GetRgIgnoreSpecifier()
+
+  " add hidden as well
+  let cmd = cmd . ' --hidden '
+
   let cmd = cmd . ' ' . a:patterns
 
-  let raw_results  = system(cmd)
+  "echom "any-jump: meth: " . a:meth
+
+  if a:meth == '.l' " -> cur dir and not recursive
+      let cmd = cmd . ' --max-depth 1'
+  elseif a:meth == '.r' " -> cur dir and recursive
+      let cmd = cmd . ' '
+  else " a:meth == 'gr' -> git root and recursive
+    " could use FugitiveGitDir() here but that returns the actual .git dir
+    let git_dir = s:find_git_root()
+    if !empty(git_dir) && isdirectory(git_dir)
+      let cmd = cmd . ' ' . git_dir
+    endif
+  endif
+
+  "echom "any-jump: cmdline: " . cmd
+
+  let raw_results  = s:Runsystem(cmd)
+
+  if raw_results == "Aborted-cmd"
+      let grep_result             = s:NewGrepResult()
+      let grep_result.line_number = 0
+      let grep_result.path        = ""
+      let grep_result.text        = "Aborted-cmd"
+      return grep_result
+  endif
+
   let grep_results = s:ParseRgResults(raw_results)
   let grep_results = s:FilterGrepResults(a:language, grep_results)
 
   return grep_results
 endfu
 
-fu! s:RunAgDefinitionSearch(language, patterns) abort
+fu! s:RunAgDefinitionSearch(language, patterns, meth) abort
   let ag_ft = s:GetAgFiletype(a:language)
 
   let cmd = s:ag_base_cmd . ' --' . ag_ft
   let cmd = cmd . s:GetAgIgnoreSpecifier()
   let cmd = cmd . ' ' . a:patterns
 
-  let raw_results  = system(cmd)
+  let raw_results  = s:Runsystem(cmd)
   let grep_results = s:ParseAgResults(raw_results)
   let grep_results = s:FilterGrepResults(a:language, grep_results)
 
   return grep_results
 endfu
 
-fu! s:RunRgUsagesSearch(language, keyword) abort
+fu! s:RunRgUsagesSearch(language, keyword, meth) abort
   let kw = a:keyword
   let kw = substitute(kw, "\-", "\\\\-", "g") " shell escape
 
   let cmd = s:rg_base_cmd . ' -w ' . string(kw)
   let cmd = cmd . s:GetRgIgnoreSpecifier()
+
+  " add hidden as well
+  let cmd = cmd . ' --hidden '
 
   if g:any_jump_references_only_for_current_filetype
         \ && type(a:language) == v:t_string
@@ -364,7 +421,32 @@ fu! s:RunRgUsagesSearch(language, keyword) abort
     let cmd   = cmd . ' -t ' . rg_ft
   endif
 
-  let raw_results  = system(cmd)
+  "echom "any-jump: meth: " . a:meth
+
+  if a:meth == '.l' " -> cur dir and not recursive
+      let cmd = cmd . ' --max-depth 1'
+  elseif a:meth == '.r' " -> cur dir and recursive
+      let cmd = cmd . ' '
+  else " a:meth == 'gr' -> git root and recursive
+    " could use FugitiveGitDir() here but that returns the actual .git dir
+    let git_dir = s:find_git_root()
+    if !empty(git_dir) && isdirectory(git_dir)
+      let cmd = cmd . ' ' . git_dir
+    endif
+  endif
+
+  "echom "any-jump: cmdline: " . cmd
+
+  let raw_results  = s:Runsystem(cmd)
+
+  if raw_results == "Aborted-cmd"
+      let grep_result             = s:NewGrepResult()
+      let grep_result.line_number = 0
+      let grep_result.path        = ""
+      let grep_result.text        = "Aborted-cmd"
+      return grep_result
+  endif
+
   let grep_results = s:ParseRgResults(raw_results)
   let grep_results = s:FilterGrepResults(a:language, grep_results)
 
@@ -382,7 +464,7 @@ fu! s:RunAgUsagesSearch(language, keyword) abort
     let cmd   = cmd . ' --' . ag_ft
   endif
 
-  let raw_results  = system(cmd)
+  let raw_results  = s:Runsystem(cmd)
 
   let grep_results = s:ParseAgResults(raw_results)
   let grep_results = s:FilterGrepResults(a:language, grep_results)
