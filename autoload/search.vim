@@ -377,11 +377,7 @@ fu! s:RunRgDefinitionSearch(language, patterns, meth) abort
   let raw_results  = s:Runsystem(cmd)
 
   if raw_results == "Aborted-cmd"
-      let grep_result             = s:NewGrepResult()
-      let grep_result.line_number = 0
-      let grep_result.path        = ""
-      let grep_result.text        = "Aborted-cmd"
-      return grep_result
+      return [{ "line_number": 0, "path": 0, "text": raw_results }]
   endif
 
   let grep_results = s:ParseRgResults(raw_results)
@@ -440,11 +436,7 @@ fu! s:RunRgUsagesSearch(language, keyword, meth) abort
   let raw_results  = s:Runsystem(cmd)
 
   if raw_results == "Aborted-cmd"
-      let grep_result             = s:NewGrepResult()
-      let grep_result.line_number = 0
-      let grep_result.path        = ""
-      let grep_result.text        = "Aborted-cmd"
-      return grep_result
+      return [{ "line_number": 0, "path": 0, "text": raw_results }]
   endif
 
   let grep_results = s:ParseRgResults(raw_results)

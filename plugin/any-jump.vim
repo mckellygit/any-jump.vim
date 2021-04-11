@@ -640,18 +640,16 @@ fu! s:Jump(...) abort range
     let ib.grouping_enabled         = g:any_jump_grouping_enabled
 
     if type(lang) == v:t_string
-      "let ib.definitions_grep_results = search#SearchDefinitions(lang, keyword, search_meth)
-      let def_grep_results = search#SearchDefinitions(lang, keyword, search_meth)
-      if def_grep_results.text == "Aborted-cmd"
+      let ib.definitions_grep_results = search#SearchDefinitions(lang, keyword, search_meth)
+      if len(ib.definitions_grep_results) == 1 && ib.definitions_grep_results[0].text == "Aborted-cmd"
           throw "Aborted-cmd"
       endif
-      let ib.definitions_grep_results = def_grep_results
     endif
 
     if g:any_jump_references_enabled || len(ib.definitions_grep_results) == 0
       let ib.usages_opened       = v:true
       let usages_grep_results    = search#SearchUsages(ib, search_meth)
-      if usages_grep_results.text == "Aborted-cmd"
+      if len(usages_grep_results) == 1 && usages_grep_results[0].text == "Aborted-cmd"
           throw "Aborted-cmd"
       endif
       let ib.usages_grep_results = []
