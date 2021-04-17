@@ -202,7 +202,11 @@ fu! s:CreateNvimUi(internal_buffer) abort
   let height     = float2nr(&lines * g:any_jump_window_height_ratio)
   let width      = float2nr(&columns * g:any_jump_window_width_ratio)
   let horizontal = float2nr((&columns - width) / 2)
-  let vertical   = g:any_jump_window_top_offset
+  if g:any_jump_window_top_offset >= 0
+    let vertical   = g:any_jump_window_top_offset
+  else
+    let vertical   = float2nr((&lines - height) / 2)
+  endif
 
   let opts = {
         \ 'relative': 'editor',
@@ -211,6 +215,7 @@ fu! s:CreateNvimUi(internal_buffer) abort
         \ 'width': width,
         \ 'height': height,
         \ 'style': 'minimal',
+        \ 'border': 'single',
         \ }
 
   let winid = nvim_open_win(buf, v:true, opts)
@@ -219,7 +224,8 @@ fu! s:CreateNvimUi(internal_buffer) abort
   call nvim_buf_set_option(buf, 'filetype', 'any-jump')
 
   call nvim_win_set_option(winid, 'number', v:false)
-  call nvim_win_set_option(winid, 'wrap', v:false)
+  call nvim_win_set_option(winid, 'wrap', v:true)
+  call nvim_win_set_option(winid, 'cursorline', v:true)
 
   let t:any_jump.vim_bufnr = buf
 
@@ -240,12 +246,13 @@ fu! s:CreateVimUi(internal_buffer) abort
   let width  = float2nr(&columns * g:any_jump_window_width_ratio)
 
   let popup_winid = popup_menu([], {
-        \"wrap":       0,
+        \"wrap":       1,
         \"cursorline": 1,
         \"minheight":  height,
         \"maxheight":  height,
         \"minwidth":   width,
         \"maxwidth":   width,
+        \"scrollbar":  0,
         \"border":     [],
         \"borderchars":['─', '│', '─', '│', '┌', '┐', '┘', '└'],
         \"padding":    [0,1,1,1],
@@ -498,6 +505,34 @@ fu! s:VimPopupFilter(popup_winid, key) abort
 
   elseif a:key == "\<S-F20>" "<M-S-PageDown>
     call win_execute(a:popup_winid, "silent normal! 5\<C-e>5j")
+    return 1
+
+  " ---------------
+
+  " horizontal scroll - is it possible in vim popup ??
+
+  elseif a:key == "\<S-Right>"
+    call win_execute(a:popup_winid, "silent normal! 10zl10l")
+    return 1
+
+  elseif a:key == "\<S-Left>"
+    call win_execute(a:popup_winid, "silent normal! 10zh10h")
+    return 1
+
+  elseif a:key == "\<M-l>"
+    call win_execute(a:popup_winid, "silent normal! 10zl10l")
+    return 1
+
+  elseif a:key == "\<M-h>"
+    call win_execute(a:popup_winid, "silent normal! 10zh10h")
+    return 1
+
+  elseif a:key == "\<M-.>"
+    call win_execute(a:popup_winid, "silent normal! 10zl10l")
+    return 1
+
+  elseif a:key == "\<M-h>"
+    call win_execute(a:popup_winid, "silent normal! 10zh10h")
     return 1
 
   " ---------------
@@ -961,6 +996,9 @@ fu! g:AnyJumpToggleAllResults() abort
   endif
 endfu
 
+let g:oline = 0
+let g:delta = 0
+
 fu! g:AnyJumpHandlePreview() abort
   let ui          = s:GetCurrentInternalBuffer()
   let action_item = ui.TryFindOriginalLinkFromPos()
@@ -982,6 +1020,7 @@ fu! g:AnyJumpHandlePreview() abort
 
     call ui.StartUiTransaction()
 
+    let cx = 0
     for line in ui.items
       if line[0].type == 'preview_text'
         for item in line
@@ -1000,6 +1039,7 @@ fu! g:AnyJumpHandlePreview() abort
 
         " remove from ui
         call deletebufline(ui.vim_bufnr, layer_start_ln)
+        let cx += 1
 
       elseif line[0].type == 'help_link'
         " not implemeted
@@ -1012,6 +1052,57 @@ fu! g:AnyJumpHandlePreview() abort
 
     call ui.RemoveGarbagedLines()
     call ui.EndUiTransaction()
+
+    " hack to help correct line after preview close
+    "echom "cx: " . cx
+    if !has("nvim") && g:oline != 0
+        let cline = line(".", ui.popup_winid)
+        let g:delta = cline - g:oline
+        "echom "d: " . g:delta . "cx: " . cx
+        if g:delta > 0
+            if g:delta > cx
+                let g:delta = cx
+            endif
+            let adj = ""
+            for i in range(1,g:delta)
+                let adj .= "k\<C-y>"
+            endfor
+            "echo "adj: " . adj
+            call feedkeys(adj, "n")
+            redraw!
+        endif
+
+        if cline < g:oline
+            let g:oline = cline
+        else
+            let d2 = cline - (g:oline + cx)
+            if d2 <= 0
+                return
+            else
+                let g:oline = line(".", ui.popup_winid)
+            endif
+        endif
+    endif
+
+  elseif !has("nvim")
+      let g:oline = line(".", ui.popup_winid)
+  endif
+
+  if !has("nvim")
+      let cline = line(".", ui.popup_winid)
+      let bline = line("w$", ui.popup_winid)
+      let d3 = bline - cline
+      if d3 <= g:any_jump_preview_lines_count + 2
+          let d4 = (g:any_jump_preview_lines_count + 3) - d3
+          if g:delta > 0
+              let d4 -= g:delta
+          endif
+          if d4 > 0
+              let adj = "silent normal! " . d4 . "\<C-e>"
+              call win_execute(ui.popup_winid, adj)
+              redraw!
+          endif
+      endif
   endif
 
   " if clicked on just opened preview
@@ -1032,9 +1123,18 @@ fu! g:AnyJumpHandlePreview() abort
       let preview_after_offset  = g:any_jump_preview_lines_count
       let preview_end_ln        = file_ln + preview_after_offset
 
-      let path = join([getcwd(), action_item.data.path], '/')
-      let cmd  = 'head -n ' . string(preview_end_ln) . ' ' . path
-            \ . ' | tail -n ' . string(preview_after_offset + 1 + preview_before_offset)
+      "let path = join([getcwd(), action_item.data.path], '/')
+      let path = action_item.data.path
+
+      if executable('bat')
+          let p1 = file_ln - 2
+          let p2 = file_ln + g:any_jump_preview_lines_count
+          let cmd = 'bat -pp --color never -r ' . p1 . ':' . p2 . ' ' . path
+          "echom "cmd: " . cmd
+      else
+          let cmd  = 'head -n ' . string(preview_end_ln) . ' ' . path
+              \ . ' | tail -n ' . string(preview_after_offset + 1 + preview_before_offset)
+      endif
 
       let preview = split(system(cmd), "\n")
       let render_ln = ui.GetItemLineNumber(action_item)
@@ -1155,22 +1255,22 @@ command! AnyJumpRunSpecs call s:RunSpecs()
 if s:nvim
   augroup anyjump
     au!
-    au FileType any-jump nnoremap <buffer> o :call g:AnyJumpHandleOpen()<cr>
-    au FileType any-jump nnoremap <buffer><CR> :call g:AnyJumpHandleOpen()<cr>
-    au FileType any-jump nnoremap <buffer> t :call g:AnyJumpHandleOpen('tab')<cr>
-    au FileType any-jump nnoremap <buffer> s :call g:AnyJumpHandleOpen('split')<cr>
-    au FileType any-jump nnoremap <buffer> v :call g:AnyJumpHandleOpen('vsplit')<cr>
+    au FileType any-jump nnoremap <silent> <buffer> o :call g:AnyJumpHandleOpen()<cr>
+    au FileType any-jump nnoremap <silent> <buffer><CR> :call g:AnyJumpHandleOpen()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> t :call g:AnyJumpHandleOpen('tab')<cr>
+    au FileType any-jump nnoremap <silent> <buffer> s :call g:AnyJumpHandleOpen('split')<cr>
+    au FileType any-jump nnoremap <silent> <buffer> v :call g:AnyJumpHandleOpen('vsplit')<cr>
 
-    au FileType any-jump nnoremap <buffer> p :call g:AnyJumpHandlePreview()<cr>
-    au FileType any-jump nnoremap <buffer> <tab> :call g:AnyJumpHandlePreview()<cr>
-    au FileType any-jump nnoremap <buffer> q :call g:AnyJumpHandleClose()<cr>
-    au FileType any-jump nnoremap <buffer> <esc> :call g:AnyJumpHandleClose()<cr>
-    au FileType any-jump nnoremap <buffer> r :call g:AnyJumpHandleReferences()<cr>
-    au FileType any-jump nnoremap <buffer> b :call g:AnyJumpToFirstLink()<cr>
-    au FileType any-jump nnoremap <buffer> T :call g:AnyJumpToggleGrouping()<cr>
-    au FileType any-jump nnoremap <buffer> A :call g:AnyJumpToggleAllResults()<cr>
-    au FileType any-jump nnoremap <buffer> a :call g:AnyJumpLoadNextBatchResults()<cr>
-    au FileType any-jump nnoremap <buffer> L :call g:AnyJumpToggleListStyle()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> p :call g:AnyJumpHandlePreview()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> <tab> :call g:AnyJumpHandlePreview()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> q :call g:AnyJumpHandleClose()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> <esc> :call g:AnyJumpHandleClose()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> r :call g:AnyJumpHandleReferences()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> b :call g:AnyJumpToFirstLink()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> T :call g:AnyJumpToggleGrouping()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> A :call g:AnyJumpToggleAllResults()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> a :call g:AnyJumpLoadNextBatchResults()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> L :call g:AnyJumpToggleListStyle()<cr>
   augroup END
 end
 
