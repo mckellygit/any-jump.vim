@@ -663,6 +663,10 @@ fu! s:Jump(...) abort range
   endif
 
   "let keyword = substitute(keyword, "\\$", "\\\\\\\\\\\\$", "g")
+  let k2 = substitute(keyword, "\\$", "\\\\$", "g")
+  if k2 != keyword
+      let keyword = "\'" . k2 . "\'"
+  endif
   "let keyword = shellescape(keyword)
 
   redraw!
