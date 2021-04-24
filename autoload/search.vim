@@ -106,13 +106,28 @@ endfor
 
 function! s:Runsystem(cmd)
     "echom "s:Runsystem(" . a:cmd . ")"
-    let result = system(a:cmd)
-    "let mcmd = a:cmd . ' > /tmp/foo'
-    "execute 'AsyncRun -mode=system -name=anyjump ' . mcmd
-    "let result = readfile('/tmp/foo','')[1:-]
-    if v:shell_error
-        return "Aborted-cmd"
+    try
+        " Dont add silent in front of let, as then it appears
+        " nvim wont set the ctrl-c v:shell_error to -1
+        let result = system(a:cmd)
+        "let mcmd = a:cmd . ' > /tmp/foo'
+        "execute 'AsyncRun -mode=system -name=anyjump ' . mcmd
+        "let result = readfile('/tmp/foo','')[1:-]
+    catch /^Vim:Interrupt$/	 " catch interrupts (CTRL-C)
+        let result = "Aborted-cmd"
+        return result
+    endtry
+    "echom "v:shell_error = " . v:shell_error
+    if v:shell_error == -1
+        " often from a ctrl-c interrupt ...
+        let result = "Aborted-cmd"
+    elseif v:shell_error
+        " TODO: do we return empty or perhaps what it has so far ?
+        let result = "empty$result"
+    elseif empty (result)
+        let result = "empty$result"
     endif
+    "echom "res = " . result
     return result
 endfunction
 
@@ -378,6 +393,8 @@ fu! s:RunRgDefinitionSearch(language, patterns, meth) abort
 
   if raw_results == "Aborted-cmd"
       return [{ "line_number": 0, "path": 0, "text": raw_results }]
+  elseif raw_results == "empty$result"
+      return [{ "line_number": 0, "path": 0, "text": raw_results }]
   endif
 
   let grep_results = s:ParseRgResults(raw_results)
@@ -437,6 +454,8 @@ fu! s:RunRgUsagesSearch(language, keyword, meth) abort
 
   if raw_results == "Aborted-cmd"
       return [{ "line_number": 0, "path": 0, "text": raw_results }]
+  elseif raw_results == "empty$result"
+      return [{ "line_number": 0, "path": 0, "text": raw_results }]
   endif
 
   let grep_results = s:ParseRgResults(raw_results)
@@ -487,12 +506,19 @@ endfu
 fu! s:ParseRgResults(raw_results) abort
   let grep_results = []
 
+  "echom "raw_results = " . a:raw_results
+
   if len(a:raw_results) > 0
     let matches = []
 
     for res in split(a:raw_results, "\n")
-      let match = json_decode(res)
-      call add(matches, match)
+        try
+            let match = json_decode(res)
+            call add(matches, match)
+        catch /.*/
+            "continue
+            return []
+        endtry
     endfor
 
     for match in matches

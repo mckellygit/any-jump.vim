@@ -662,6 +662,9 @@ fu! s:Jump(...) abort range
     let search_meth = opts['search_meth']
   endif
 
+  "let keyword = substitute(keyword, "\\$", "\\\\\\\\\\\\$", "g")
+  "let keyword = shellescape(keyword)
+
   redraw!
   echo "AnyJump: parsing: " . keyword
 
@@ -678,6 +681,8 @@ fu! s:Jump(...) abort range
       let ib.definitions_grep_results = search#SearchDefinitions(lang, keyword, search_meth)
       if len(ib.definitions_grep_results) == 1 && ib.definitions_grep_results[0].text == "Aborted-cmd"
           throw "Aborted-cmd"
+      elseif len(ib.definitions_grep_results) == 1 && ib.definitions_grep_results[0].text == "empty$result"
+          let ib.definitions_grep_results = []
       endif
     endif
 
@@ -686,6 +691,8 @@ fu! s:Jump(...) abort range
       let usages_grep_results    = search#SearchUsages(ib, search_meth)
       if len(usages_grep_results) == 1 && usages_grep_results[0].text == "Aborted-cmd"
           throw "Aborted-cmd"
+      elseif len(usages_grep_results) == 1 && usages_grep_results[0].text == "empty$result"
+          let usages_grep_results = []
       endif
       let ib.usages_grep_results = []
 
