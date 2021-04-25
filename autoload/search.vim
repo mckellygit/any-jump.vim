@@ -368,8 +368,8 @@ fu! s:RunRgDefinitionSearch(language, patterns, meth) abort
   let cmd = s:rg_base_cmd . ' -t ' . rg_ft
   let cmd = cmd . s:GetRgIgnoreSpecifier()
 
-  " add hidden as well
-  let cmd = cmd . ' --hidden '
+  " add hidden and to ignore .git dir as well
+  let cmd = cmd . ' --hidden --iglob !".git" '
 
   let cmd = cmd . ' ' . a:patterns
 
@@ -424,8 +424,8 @@ fu! s:RunRgUsagesSearch(language, keyword, meth) abort
   let cmd = s:rg_base_cmd . ' -w ' . string(kw)
   let cmd = cmd . s:GetRgIgnoreSpecifier()
 
-  " add hidden as well
-  let cmd = cmd . ' --hidden '
+  " add hidden and to ignore .git dir as well
+  let cmd = cmd . ' --hidden --iglob !".git" '
 
   if g:any_jump_references_only_for_current_filetype
         \ && type(a:language) == v:t_string

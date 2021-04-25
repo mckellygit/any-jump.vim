@@ -1262,6 +1262,22 @@ command! AnyJumpBack call s:JumpBack()
 command! AnyJumpLastResults call s:JumpLastResults()
 command! AnyJumpRunSpecs call s:RunSpecs()
 
+function! AnyJumpMethod(meth, keyword)
+    if a:meth == 0
+        call s:Jump({"is_arg": a:keyword})
+    elseif a:meth == 1
+        call s:Jump({"search_meth": ".l", "is_arg": a:keyword})
+    elseif a:meth == 2
+        call s:Jump({"search_meth": ".r", "is_arg": a:keyword})
+    else
+        redraw!
+        echo "AnyJump: invalid search method (" . a:meth . ") {0,1,2}"
+        sleep 1500m
+        redraw!
+        echo " "
+    endif
+endfunction
+
 " Window KeyBindings
 if s:nvim
   augroup anyjump
