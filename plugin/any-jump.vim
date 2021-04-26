@@ -634,6 +634,7 @@ fu! s:Jump(...) abort range
     let opts = a:1
   endif
 
+  let has_kw = 0
   if has_key(opts, 'is_visual')
     let x = getpos("'<")[2]
     let y = getpos("'>")[2]
@@ -650,6 +651,7 @@ fu! s:Jump(...) abort range
     let search_meth = ".r"
   elseif has_key(opts, 'is_arg')
     let keyword = opts['is_arg']
+    let has_kw = 1
   else
     let keyword = expand('<cword>')
   endif
@@ -662,12 +664,14 @@ fu! s:Jump(...) abort range
     let search_meth = opts['search_meth']
   endif
 
-  "let keyword = substitute(keyword, "\\$", "\\\\\\\\\\\\$", "g")
-  let k2 = substitute(keyword, "\\$", "\\\\$", "g")
-  if k2 != keyword
+  if has_kw != 1
+    "let keyword = substitute(keyword, "\\$", "\\\\\\\\\\\\$", "g")
+    let k2 = substitute(keyword, "\\$", "\\\\$", "g")
+    if k2 != keyword
       let keyword = "\'" . k2 . "\'"
+    endif
+    "let keyword = shellescape(keyword)
   endif
-  "let keyword = shellescape(keyword)
 
   redraw!
   echo "AnyJump: parsing: " . keyword
