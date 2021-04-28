@@ -118,7 +118,8 @@ function! s:Runsystem(cmd)
         return result
     endtry
     "echom "v:shell_error = " . v:shell_error
-    if v:shell_error == -1
+    " nvim can report -2
+    if v:shell_error <= -1
         " often from a ctrl-c interrupt ...
         let result = "Aborted-cmd"
     elseif v:shell_error
@@ -369,7 +370,7 @@ fu! s:RunRgDefinitionSearch(language, patterns, meth) abort
   let cmd = cmd . s:GetRgIgnoreSpecifier()
 
   " add hidden and to ignore .git dir as well
-  let cmd = cmd . ' --hidden --iglob !".git" '
+  let cmd = cmd . " --hidden --iglob \!'.git' "
 
   let cmd = cmd . ' ' . a:patterns
 
@@ -425,7 +426,7 @@ fu! s:RunRgUsagesSearch(language, keyword, meth) abort
   let cmd = cmd . s:GetRgIgnoreSpecifier()
 
   " add hidden and to ignore .git dir as well
-  let cmd = cmd . ' --hidden --iglob !".git" '
+  let cmd = cmd . " --hidden --iglob \!'.git' "
 
   if g:any_jump_references_only_for_current_filetype
         \ && type(a:language) == v:t_string
