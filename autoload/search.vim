@@ -110,6 +110,7 @@ function! s:Runsystem(cmd)
         " Dont add silent in front of let, as then it appears
         " nvim wont set the ctrl-c v:shell_error to -1
         let result = system(a:cmd)
+        "echom "res = " . result
         "let mcmd = a:cmd . ' > /tmp/foo'
         "execute 'AsyncRun -mode=system -name=anyjump ' . mcmd
         "let result = readfile('/tmp/foo','')[1:-]
@@ -355,9 +356,12 @@ function! s:find_git_root()
     if executable("git")
         " in a submodule dir this returns git root, otherwise returns empty
         let gdir = s:Runsystem('git rev-parse --show-superproject-working-tree 2> /dev/null')[:-2]
-        if empty(gdir)
+        if empty(gdir) || gdir =~ 'empty$res'
             " not in a submodule, returns git root
             let gdir = s:Runsystem('git rev-parse --show-toplevel 2> /dev/null')[:-2]
+            if gdir =~ 'empty$res'
+                let gdir = ''
+            endif
         endif
     endif
     return gdir
@@ -383,6 +387,10 @@ fu! s:RunRgDefinitionSearch(language, patterns, meth) abort
   else " a:meth == 'gr' -> git root and recursive
     " could use FugitiveGitDir() here but that returns the actual .git dir
     let git_dir = s:find_git_root()
+    "echom "any-jump: git_dir: " . git_dir
+    if git_dir == "Aborted-cmd"
+      return [{ "line_number": 0, "path": 0, "text": git_dir }]
+    endif
     if !empty(git_dir) && isdirectory(git_dir)
       let cmd = cmd . ' ' . git_dir
     endif
@@ -444,6 +452,9 @@ fu! s:RunRgUsagesSearch(language, keyword, meth) abort
   else " a:meth == 'gr' -> git root and recursive
     " could use FugitiveGitDir() here but that returns the actual .git dir
     let git_dir = s:find_git_root()
+    if git_dir == "Aborted-cmd"
+      return [{ "line_number": 0, "path": 0, "text": git_dir }]
+    endif
     if !empty(git_dir) && isdirectory(git_dir)
       let cmd = cmd . ' ' . git_dir
     endif
