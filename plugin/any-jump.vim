@@ -178,6 +178,11 @@ fu! g:AnyJumpGetColor(name) abort
   endif
 endfu
 
+" NOTE: use same <Leader>r: (and also <Leader>a:) to set g:rtagsUseColonKeyword here
+if !exists("g:rtagsUseColonKeyword")
+    let g:rtagsUseColonKeyword = 0
+endif
+
 " ----------------------------------------------
 " Functions
 " ----------------------------------------------
@@ -653,7 +658,12 @@ fu! s:Jump(...) abort range
     let keyword = opts['is_arg']
     let has_kw = 1
   else
+    let l:oldiskeyword = &iskeyword
+    if (g:rtagsUseColonKeyword == 1)
+        setlocal iskeyword+=:
+    endif
     let keyword = expand('<cword>')
+    let &iskeyword = l:oldiskeyword
   endif
 
   if len(keyword) == 0
