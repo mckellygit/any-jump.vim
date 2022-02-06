@@ -592,6 +592,10 @@ fu! s:VimPopupFilter(popup_winid, key) abort
     call g:AnyJumpToFirstLink()
     return 1
 
+  elseif a:key ==# "0"
+    call g:AnyJumpToFirstLink()
+    return 1
+
   elseif a:key == "\<CR>" || a:key == 'o'
     call g:AnyJumpHandleOpen()
     return 1
@@ -600,7 +604,17 @@ fu! s:VimPopupFilter(popup_winid, key) abort
     call g:AnyJumpHandleOpen('tab')
     return 1
 
+  elseif a:key ==# "\<C-t>"
+    call g:AnyJumpHandleOpen('tab')
+    return 1
+
+  " cannot use multi-char <C-t>t, <C-t><C-t> here ...
+
   elseif a:key ==# "s"
+    call g:AnyJumpHandleOpen('split')
+    return 1
+
+  elseif a:key ==# "\<C-x>"
     call g:AnyJumpHandleOpen('split')
     return 1
 
@@ -608,9 +622,13 @@ fu! s:VimPopupFilter(popup_winid, key) abort
     call g:AnyJumpHandleOpen('vsplit')
     return 1
 
+  elseif a:key ==# "\<C-v>"
+    call g:AnyJumpHandleOpen('vsplit')
+    return 1
+
   elseif a:key == "q"
+        \ || a:key == "x"
         \ || a:key == "\<ESC>"
-        \ || a:key == 'x'
     " close from <C-c> cannot be caught here, but can be handled in s:PopupClosed()
     call g:AnyJumpHandleClose()
     return 1
@@ -912,7 +930,7 @@ fu! g:AnyJumpHandleReferences() abort
     return v:true
   endif
 
-  let grep_results  = search#SearchUsages(ui)
+  let grep_results  = search#SearchUsages(ui, 'gr')
   let filtered      = []
 
   " filter out results found in definitions
@@ -1299,15 +1317,23 @@ if s:nvim
     au FileType any-jump nnoremap <silent> <buffer> o :call g:AnyJumpHandleOpen()<cr>
     au FileType any-jump nnoremap <silent> <buffer><CR> :call g:AnyJumpHandleOpen()<cr>
     au FileType any-jump nnoremap <silent> <buffer> t :call g:AnyJumpHandleOpen('tab')<cr>
+    au FileType any-jump nnoremap <silent> <buffer> <C-t> :call g:AnyJumpHandleOpen('tab')<cr>
+    au FileType any-jump nnoremap <silent> <buffer> <C-t>t :call g:AnyJumpHandleOpen('tab')<cr>
+    au FileType any-jump nnoremap <silent> <buffer> <C-t><C-t> :call g:AnyJumpHandleOpen('tab')<cr>
     au FileType any-jump nnoremap <silent> <buffer> s :call g:AnyJumpHandleOpen('split')<cr>
+    au FileType any-jump nnoremap <silent> <buffer> <C-x> :call g:AnyJumpHandleOpen('split')<cr>
     au FileType any-jump nnoremap <silent> <buffer> v :call g:AnyJumpHandleOpen('vsplit')<cr>
+    au FileType any-jump nnoremap <silent> <buffer> <C-v> :call g:AnyJumpHandleOpen('vsplit')<cr>
 
     au FileType any-jump nnoremap <silent> <buffer> p :call g:AnyJumpHandlePreview()<cr>
     au FileType any-jump nnoremap <silent> <buffer> <tab> :call g:AnyJumpHandlePreview()<cr>
     au FileType any-jump nnoremap <silent> <buffer> q :call g:AnyJumpHandleClose()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> x :call g:AnyJumpHandleClose()<cr>
     au FileType any-jump nnoremap <silent> <buffer> <esc> :call g:AnyJumpHandleClose()<cr>
     au FileType any-jump nnoremap <silent> <buffer> r :call g:AnyJumpHandleReferences()<cr>
     au FileType any-jump nnoremap <silent> <buffer> b :call g:AnyJumpToFirstLink()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> 0 :call g:AnyJumpToFirstLink()<cr>
+    " why does <Home> not work here ?
     au FileType any-jump nnoremap <silent> <buffer> T :call g:AnyJumpToggleGrouping()<cr>
     au FileType any-jump nnoremap <silent> <buffer> A :call g:AnyJumpToggleAllResults()<cr>
     au FileType any-jump nnoremap <silent> <buffer> a :call g:AnyJumpLoadNextBatchResults()<cr>

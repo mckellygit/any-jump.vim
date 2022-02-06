@@ -655,11 +655,11 @@ fu! s:InternalBuffer.RenderUi() dict abort
   let color = g:AnyJumpGetColor('help')
 
   call self.AddLine([ self.CreateItem("help_text", "", color) ])
-  call self.AddLine([ self.CreateItem("help_text", "[o] open               [t] open in tab        [s] open in split   [v] open in vsplit", color) ])
-  call self.AddLine([ self.CreateItem("help_text", "[p/tab] preview file   [b] scroll to first result", color) ])
+  call self.AddLine([ self.CreateItem("help_text", "[o/<Enter>] open       [t/<C-t>] open in tab     [s/<C-x>] open in split    [v/<C-v>] open in vsplit", color) ])
+  call self.AddLine([ self.CreateItem("help_text", "[p/<Tab>] preview file [b/0/<C-home>] scroll to first result", color) ])
   call self.AddLine([ self.CreateItem("help_text", "[a] load more results  [A] load all results", color) ])
   call self.AddLine([ self.CreateItem("help_text", "[r] show references    [T] group by file", color) ])
-  call self.AddLine([ self.CreateItem("help_text", "[L] toggle search                             [esc/q] exit", color) ])
+  call self.AddLine([ self.CreateItem("help_text", "[L] toggle search                                [<Esc>/q] exit", color) ])
   call self.AddLine([ self.CreateItem("help_text", "    results ui style", color) ])
 endfu
 
