@@ -1334,6 +1334,7 @@ if s:nvim
     au FileType any-jump nnoremap <silent> <buffer> b :call g:AnyJumpToFirstLink()<cr>
     au FileType any-jump nnoremap <silent> <buffer> 0 :call g:AnyJumpToFirstLink()<cr>
     au FileType any-jump nnoremap <silent> <buffer> <s-home> :call g:AnyJumpToFirstLink()<cr>
+    au FileType any-jump nnoremap <silent> <buffer> <s-end> G
     au FileType any-jump nnoremap <silent> <buffer> T :call g:AnyJumpToggleGrouping()<cr>
     au FileType any-jump nnoremap <silent> <buffer> A :call g:AnyJumpToggleAllResults()<cr>
     au FileType any-jump nnoremap <silent> <buffer> a :call g:AnyJumpLoadNextBatchResults()<cr>
