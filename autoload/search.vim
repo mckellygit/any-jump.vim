@@ -109,7 +109,11 @@ function! s:Runsystem(cmd)
     try
         " Dont add silent in front of let, as then it appears
         " nvim wont set the ctrl-c v:shell_error to -1
-        let result = system(a:cmd)
+        if !has("nvim")
+            silent let result = system(a:cmd)
+        else
+            let result = system(a:cmd)
+        endif
         "echom "res = " . result
         "let mcmd = a:cmd . ' > /tmp/foo'
         "execute 'AsyncRun -mode=system -name=anyjump ' . mcmd
