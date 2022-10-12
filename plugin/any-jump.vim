@@ -1175,8 +1175,8 @@ fu! g:AnyJumpHandlePreview() abort
           let cmd = 'bat -pp --color never -r ' . p1 . ':' . p2 . ' ' . path
           "echom "cmd: " . cmd
       else
-          let cmd  = 'head -n ' . string(preview_end_ln) . ' ' . path
-              \ . ' | tail -n ' . string(preview_after_offset + 1 + preview_before_offset)
+          let cmd  = 'head -n ' . string(preview_end_ln) . ' "' . path
+                \ . '" | tail -n ' . string(preview_after_offset + 1 + preview_before_offset)
       endif
 
       let preview = split(system(cmd), "\n")
