@@ -325,7 +325,7 @@ fu! search#RunRegexpSpecs() abort
                       \ . test_re . "\""
               endif
 
-              let raw_results = s:Runsystem(cmd)
+              let raw_results = s:Runsystem(shellescape(cmd))
 
               if index(invalid_exist_statues[spec_type], v:shell_error) != -1
                 call add(errors, 'FAILED ' . engine . ' ' . lang . ' ' . spec_type . ' -- result: ' . string(raw_results) . "; spec: " . string(spec_string)  . '; re: ' . string(test_re))
