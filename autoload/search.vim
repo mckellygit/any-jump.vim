@@ -3,8 +3,8 @@
 let s:regexp_keyword_word = 'KEYWORD'
 let s:engines             = ['rg', 'ag']
 
-let s:rg_base_cmd = "rg -n --auto-hybrid-regex --json"
-let s:ag_base_cmd = "ag --nogroup --noheading"
+let s:rg_base_cmd = "rg -n --auto-hybrid-regex --json --color=always --smart-case --one-file-system --hidden "
+let s:ag_base_cmd = "ag --nogroup --noheading -U --one-device --hidden --color "
 
 let s:rg_filetype_convertion_map = {
       \"python":     "py",
@@ -377,9 +377,6 @@ fu! s:RunRgDefinitionSearch(language, patterns, meth) abort
   let cmd = s:rg_base_cmd . ' -t ' . rg_ft
   let cmd = cmd . s:GetRgIgnoreSpecifier()
 
-  " add hidden and some other args ...
-  let cmd = cmd . ' --color=always --smart-case --one-file-system --hidden '
-
   let cmd = cmd . ' ' . a:patterns
 
   "echom "any-jump: meth: " . a:meth
@@ -436,9 +433,6 @@ fu! s:RunRgUsagesSearch(language, keyword, meth) abort
 
   let cmd = s:rg_base_cmd . ' -w ' . string(kw)
   let cmd = cmd . s:GetRgIgnoreSpecifier()
-
-  " add hidden and some other args ...
-  let cmd = cmd . ' --color=always --smart-case --one-file-system --hidden '
 
   if g:any_jump_references_only_for_current_filetype
         \ && type(a:language) == v:t_string
