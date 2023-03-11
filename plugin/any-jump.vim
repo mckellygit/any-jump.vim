@@ -1309,31 +1309,31 @@ endfunction
 if s:nvim
   augroup anyjump
     au!
-    au FileType any-jump nnoremap <silent> <buffer> o :call g:AnyJumpHandleOpen()<cr>
-    au FileType any-jump nnoremap <silent> <buffer><CR> :call g:AnyJumpHandleOpen()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> t :call g:AnyJumpHandleOpen('tab')<cr>
-    au FileType any-jump nnoremap <silent> <buffer> <C-t> :call g:AnyJumpHandleOpen('tab')<cr>
-    au FileType any-jump nnoremap <silent> <buffer> <C-t>t :call g:AnyJumpHandleOpen('tab')<cr>
-    au FileType any-jump nnoremap <silent> <buffer> <C-t><C-t> :call g:AnyJumpHandleOpen('tab')<cr>
-    au FileType any-jump nnoremap <silent> <buffer> s :call g:AnyJumpHandleOpen('split')<cr>
-    au FileType any-jump nnoremap <silent> <buffer> <C-x> :call g:AnyJumpHandleOpen('split')<cr>
-    au FileType any-jump nnoremap <silent> <buffer> v :call g:AnyJumpHandleOpen('vsplit')<cr>
-    au FileType any-jump nnoremap <silent> <buffer> <C-v> :call g:AnyJumpHandleOpen('vsplit')<cr>
+    au FileType any-jump nnoremap <buffer> <silent> o :call g:AnyJumpHandleOpen()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <CR> :call g:AnyJumpHandleOpen()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> t :call g:AnyJumpHandleOpen('tab')<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <C-t> :call g:AnyJumpHandleOpen('tab')<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <C-t>t :call g:AnyJumpHandleOpen('tab')<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <C-t><C-t> :call g:AnyJumpHandleOpen('tab')<cr>
+    au FileType any-jump nnoremap <buffer> <silent> s :call g:AnyJumpHandleOpen('split')<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <C-x> :call g:AnyJumpHandleOpen('split')<cr>
+    au FileType any-jump nnoremap <buffer> <silent> v :call g:AnyJumpHandleOpen('vsplit')<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <C-v> :call g:AnyJumpHandleOpen('vsplit')<cr>
 
-    au FileType any-jump nnoremap <silent> <buffer> p :call g:AnyJumpHandlePreview()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> <tab> :call g:AnyJumpHandlePreview()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> q :call g:AnyJumpHandleClose()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> x :call g:AnyJumpHandleClose()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> <esc> :call g:AnyJumpHandleClose()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> r :call g:AnyJumpHandleReferences()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> b :call g:AnyJumpToFirstLink()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> 0 :call g:AnyJumpToFirstLink()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> <s-home> :call g:AnyJumpToFirstLink()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> <s-end> G
-    au FileType any-jump nnoremap <silent> <buffer> T :call g:AnyJumpToggleGrouping()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> A :call g:AnyJumpToggleAllResults()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> a :call g:AnyJumpLoadNextBatchResults()<cr>
-    au FileType any-jump nnoremap <silent> <buffer> L :call g:AnyJumpToggleListStyle()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> p :call g:AnyJumpHandlePreview()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <tab> :call g:AnyJumpHandlePreview()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> q :call g:AnyJumpHandleClose()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> x :call g:AnyJumpHandleClose()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <esc> :call g:AnyJumpHandleClose()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> r :call g:AnyJumpHandleReferences()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> b :call g:AnyJumpToFirstLink()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> 0 :call g:AnyJumpToFirstLink()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <s-home> :call g:AnyJumpToFirstLink()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <s-end> G
+    au FileType any-jump nnoremap <buffer> <silent> T :call g:AnyJumpToggleGrouping()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> A :call g:AnyJumpToggleAllResults()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> a :call g:AnyJumpLoadNextBatchResults()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> L :call g:AnyJumpToggleListStyle()<cr>
   augroup END
 end
 
