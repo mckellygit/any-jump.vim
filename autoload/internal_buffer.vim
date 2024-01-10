@@ -457,7 +457,7 @@ fu! s:InternalBuffer.RenderUiUsagesList(grep_results, start_ln) dict abort
     let to = (cp * g:any_jump_max_search_results) - 1
 
     let collection   = self.usages_grep_results[0 : to]
-    let hidden_count = len(self.usages_grep_results[to : -1])
+    let hidden_count = len(self.usages_grep_results[to : -1]) - 1
   else
     let collection = self.usages_grep_results
   endif
@@ -574,7 +574,7 @@ fu! s:InternalBuffer.RenderUi() dict abort
     let to = (cp * g:any_jump_max_search_results) - 1
 
     let collection   = self.definitions_grep_results[0 : to]
-    let hidden_count = len(self.definitions_grep_results[to : -1])
+    let hidden_count = len(self.definitions_grep_results[to : -1]) - 1
   else
     let collection = self.definitions_grep_results
   endif
