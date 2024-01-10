@@ -183,6 +183,25 @@ endif
 " ----------------------------------------------
 
 fu! s:CreateUi(internal_buffer) abort
+
+  " before creating a new lookup buffer check if
+  " another already exists and if so remove it ...
+  let aj = []
+  let cnt = 0
+  for b in getbufinfo()
+    if !b.listed
+      if b.name =~ 'any-jump lookup '
+        call add(aj, b.bufnr)
+        let cnt = cnt + 1
+      endif
+    endif
+  endfor
+  if cnt > 1
+    let oldest = min(aj)
+    execute "bwipe! " . oldest
+  endif
+  " --------------------------------------------
+
   if s:nvim
     call s:CreateNvimUi(a:internal_buffer)
   else
@@ -643,6 +662,13 @@ endfu
 fu! s:Jump(...) abort range
   redraw!
   echo " "
+
+  " if called from an any-jump window then ignore ...
+  let bname = bufname('%')
+  if bname =~ 'any-jump lookup '
+    return
+  endif
+
   let lang = lang_map#get_language_from_filetype(&l:filetype)
   let keyword = ''
   let search_meth = 'gr'
@@ -759,6 +785,13 @@ endfu
 fu! s:JumpBack() abort
   redraw!
   echo " "
+
+  " if called from an any-jump window then ignore ...
+  let bname = bufname('%')
+  if bname =~ 'any-jump lookup '
+    return
+  endif
+
   if exists('t:any_jump') && t:any_jump.previous_bufnr
     let new_previous = bufnr()
     execute(':buf ' . t:any_jump.previous_bufnr)
@@ -769,6 +802,13 @@ endfu
 fu! s:JumpLastResults() abort
   redraw!
   echo " "
+
+  " if called from an any-jump window then ignore ...
+  let bname = bufname('%')
+  if bname =~ 'any-jump lookup '
+    return
+  endif
+
   if exists('t:any_jump') " TODO: check for buffer visibility here
     let t:any_jump.source_win_id = winnr()
     call s:CreateUi(t:any_jump)
