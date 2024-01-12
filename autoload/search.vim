@@ -536,7 +536,12 @@ fu! s:ParseRgResults(raw_results) abort
         let data = get(match, 'data')
 
         if type(data) == v:t_dict
-          let text = data.lines.text
+          " mck - not sure how/why but if no text in dict then continue on ...
+          try
+            let text = data.lines.text
+          catch /E716/
+            continue
+          endtry
           let text = substitute(text, '^\s*', '', 'g')
           let text = substitute(text, '\n', '', 'g')
 
