@@ -642,7 +642,9 @@ fu! s:VimPopupFilter(popup_winid, key) abort
 
   elseif a:key == "q"
         \ || a:key == "x"
-        \ || a:key == "\<ESC>"
+        \ || a:key == "\<C-q>"
+        \ || a:key == "\<C-c>"
+    " TODO: skip <Esc> ?
     " close from <C-c> cannot be caught here, but can be handled in s:PopupClosed()
     call g:AnyJumpHandleClose()
     return 1
@@ -1364,7 +1366,9 @@ if s:nvim
     au FileType any-jump nnoremap <buffer> <silent> <tab> :call g:AnyJumpHandlePreview()<cr>
     au FileType any-jump nnoremap <buffer> <silent> q :call g:AnyJumpHandleClose()<cr>
     au FileType any-jump nnoremap <buffer> <silent> x :call g:AnyJumpHandleClose()<cr>
-    au FileType any-jump nnoremap <buffer> <silent> <esc> :call g:AnyJumpHandleClose()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <C-q> :call g:AnyJumpHandleClose()<cr>
+    au FileType any-jump nnoremap <buffer> <silent> <C-c> :call g:AnyJumpHandleClose()<cr>
+    " TODO: skip <Esc> ?
     au FileType any-jump nnoremap <buffer> <silent> r :call g:AnyJumpHandleReferences()<cr>
     au FileType any-jump nnoremap <buffer> <silent> b :call g:AnyJumpToFirstLink()<cr>
     au FileType any-jump nnoremap <buffer> <silent> 0 :call g:AnyJumpToFirstLink()<cr>
