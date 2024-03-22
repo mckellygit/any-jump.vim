@@ -97,7 +97,7 @@ call s:set_plugin_global_option('any_jump_keyword_match_cursor_mode', 'word')
 " - 'filename_last'
 call s:set_plugin_global_option('any_jump_results_ui_style', 'filename_first')
 
-" Show line numbers in search rusults
+" Show line numbers in search results
 call s:set_plugin_global_option('any_jump_list_numbers', v:false)
 
 " Auto search usages
@@ -112,16 +112,19 @@ call s:set_plugin_global_option('any_jump_preview_lines_count', 5)
 " Max search results, other results can be opened via [a]
 call s:set_plugin_global_option('any_jump_max_search_results', 10)
 
-" Prefered search engine: rg or ag
+" Preferred search engine: rg or ag
 call s:set_plugin_global_option('any_jump_search_prefered_engine', 'rg')
 
-" Disable default keybindinngs for commands
+" Disable default keybindings for commands
 call s:set_plugin_global_option('any_jump_disable_default_keybindings', v:false)
 
 " Any-jump window size & position options
 call s:set_plugin_global_option('any_jump_window_width_ratio', str2float('0.6'))
 call s:set_plugin_global_option('any_jump_window_height_ratio', str2float('0.6'))
 call s:set_plugin_global_option('any_jump_window_top_offset', 2)
+
+" Show / hide Help section (default: 1)
+call s:set_plugin_global_option('any_jump_show_help_section', v:true)
 
 " Remove comments line from search results (default: 1)
 call s:set_plugin_global_option('any_jump_remove_comments_from_results', v:true)
@@ -136,6 +139,10 @@ call s:set_plugin_global_option('any_jump_disable_vcs_ignore', v:false)
 " Custom ignore files
 " default is: ['*.tmp', '*.temp']
 call s:set_plugin_global_option('any_jump_ignored_files', ['*.tmp', '*.temp'])
+
+" Vertically center the screen after jumping
+" (default: false)
+call s:set_plugin_global_option('any_jump_center_screen_after_jump', v:false)
 
 " ----------------------------------------------
 " Public customization methods
@@ -646,7 +653,7 @@ fu! s:VimPopupFilter(popup_winid, key) abort
         \ || a:key ==# "\<F18>"
         \ || a:key ==# "\<C-c>"
     " TODO: skip <Esc> ?
-    " close from <C-c> cannot be caught here, but can be handled in s:PopupClosed()
+    " close from <C-c> cannot be caught here, but can be handled in s:PopupClosed() ???
     call g:AnyJumpHandleClose()
     return 1
   endif
@@ -875,6 +882,9 @@ fu! g:AnyJumpHandleOpen(...) abort
 
       " open new file
       execute 'edit ' . action_item.data.path . '|:' . action_item.data.line_number
+      if g:any_jump_center_screen_after_jump == v:true
+        execute 'norm! zz'
+      endif
     endif
 
     " add current location to jump list
