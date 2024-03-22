@@ -640,11 +640,11 @@ fu! s:VimPopupFilter(popup_winid, key) abort
     call g:AnyJumpHandleOpen('vsplit')
     return 1
 
-  elseif a:key == "q"
-        \ || a:key == "x"
-        \ || a:key == "\<C-q>"
-        \ || a:key == "\<F18>"
-        \ || a:key == "\<C-c>"
+  elseif a:key ==# "q"
+        \ || a:key ==# "x"
+        \ || a:key ==# "\<C-q>"
+        \ || a:key ==# "\<F18>"
+        \ || a:key ==# "\<C-c>"
     " TODO: skip <Esc> ?
     " close from <C-c> cannot be caught here, but can be handled in s:PopupClosed()
     call g:AnyJumpHandleClose()
@@ -1380,6 +1380,9 @@ if s:nvim
     au FileType any-jump nnoremap <buffer> <silent> A :call g:AnyJumpToggleAllResults()<cr>
     au FileType any-jump nnoremap <buffer> <silent> a :call g:AnyJumpLoadNextBatchResults()<cr>
     au FileType any-jump nnoremap <buffer> <silent> L :call g:AnyJumpToggleListStyle()<cr>
+
+    au FileType any-jump nmap <buffer> <silent> <Up>   k
+    au FileType any-jump nmap <buffer> <silent> <Down> j
   augroup END
 end
 
