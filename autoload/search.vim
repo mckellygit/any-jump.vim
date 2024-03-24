@@ -127,11 +127,11 @@ function! s:Runsystem(cmd)
     if v:shell_error <= -1
         " often from a ctrl-c interrupt ...
         let result = "Aborted-cmd"
-    elseif v:shell_error
-        " TODO: do we return empty or perhaps what it has so far ?
-        let result = "empty$result"
     elseif empty (result)
         let result = "empty$result"
+    "elseif v:shell_error
+        " TODO: do we return empty or perhaps what it has so far ?
+        "let result = "empty$result"
     endif
     "echom "res = " . result
     return result
@@ -397,6 +397,8 @@ fu! s:RunRgDefinitionSearch(language, patterns, meth) abort
     endif
   endif
 
+  "let cmd = cmd . ' 2>/dev/null'
+
   "echom "any-jump: cmdline: " . cmd
 
   let raw_results  = s:Runsystem(cmd)
@@ -450,6 +452,7 @@ fu! s:RunRgUsagesSearch(language, keyword, meth) abort
   else " a:meth == 'gr' -> git root and recursive
     " could use FugitiveGitDir() here but that returns the actual .git dir
     let git_dir = s:find_git_root()
+    "echom "any-jump: git_dir: " . git_dir
     if git_dir == "Aborted-cmd"
       return [{ "line_number": 0, "path": 0, "text": git_dir }]
     endif
@@ -457,6 +460,8 @@ fu! s:RunRgUsagesSearch(language, keyword, meth) abort
       let cmd = cmd . ' ' . git_dir
     endif
   endif
+
+  "let cmd = cmd . ' 2>/dev/null'
 
   "echom "any-jump: cmdline: " . cmd
 
