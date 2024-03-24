@@ -397,7 +397,7 @@ fu! s:RunRgDefinitionSearch(language, patterns, meth) abort
     endif
   endif
 
-  "let cmd = cmd . ' 2>/dev/null'
+  let cmd = cmd . ' 2>/dev/null'
 
   "echom "any-jump: cmdline: " . cmd
 
@@ -461,7 +461,7 @@ fu! s:RunRgUsagesSearch(language, keyword, meth) abort
     endif
   endif
 
-  "let cmd = cmd . ' 2>/dev/null'
+  let cmd = cmd . ' 2>/dev/null'
 
   "echom "any-jump: cmdline: " . cmd
 
