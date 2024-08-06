@@ -259,9 +259,16 @@ fu! s:CreateNvimUi(internal_buffer) abort
   call t:any_jump.JumpToFirstOfType('link', 'definitions')
 endfu
 
+if !s:nvim
+  let g:orig_ve=&t_ve
+endif
+
 function! s:PopupClosed(id, result)
   if a:result == -1
     "echo "Popup closed from <C-c>"
+  endif
+  if !s:nvim
+    let &t_ve=g:orig_ve
   endif
 endfunction
 
@@ -290,10 +297,13 @@ fu! s:CreateVimUi(internal_buffer) abort
   let a:internal_buffer.vim_bufnr   = winbufnr(popup_winid)
 
   call a:internal_buffer.RenderUi()
-  if !has("nvim")
+
+  if !s:nvim
     " mck - dont jump here
     "call a:internal_buffer.JumpToFirstOfType('link', 'definitions')
     call popup_filter_menu(popup_winid, "j")
+    let g:orig_ve=&t_ve
+    let &t_ve=''
   endif
 endfu
 
