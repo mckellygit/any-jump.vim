@@ -583,6 +583,10 @@ fu! s:VimPopupFilter(popup_winid, key) abort
     call g:AnyJumpHandlePreview()
     return 1
 
+  elseif a:key ==# "\<C-Bslash>"
+    call win_execute(a:popup_winid, ':silent set nowrap! nowrap?')
+    return 1
+
   " ---------------
 
   elseif a:key == "p" || a:key == "\<TAB>"
@@ -1393,6 +1397,9 @@ if s:nvim
 
     au FileType any-jump nmap <buffer> <silent> <Up>   k
     au FileType any-jump nmap <buffer> <silent> <Down> j
+
+    au FileType any-jump nnoremap <silent> <buffer> <M-C-P> :call g:AnyJumpHandlePreview()<CR>
+    au FileType any-jump nnoremap <silent> <buffer> <C-Bslash> :silent set nowrap! nowrap?<CR>
   augroup END
 end
 
