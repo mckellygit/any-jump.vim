@@ -1398,6 +1398,17 @@ if s:nvim
     "au FileType any-jump nnoremap <buffer> <silent> q :call g:AnyJumpHandleClose()<cr>
     "au FileType any-jump nnoremap <buffer> <silent> x :call g:AnyJumpHandleClose()<cr>
 
+    au FileType any-jump noremap <buffer> <silent> V <Nop>
+
+    au FileType any-jump noremap <buffer> <silent> x <Nop>
+    au FileType any-jump noremap <buffer> <silent> d <Nop>
+    " r mapped below ...
+    au FileType any-jump noremap <buffer> <silent> i <Nop>
+    au FileType any-jump noremap <buffer> <silent> X <Nop>
+    au FileType any-jump noremap <buffer> <silent> D <Nop>
+    au FileType any-jump noremap <buffer> <silent> R <Nop>
+    au FileType any-jump noremap <buffer> <silent> I <Nop>
+
     au FileType any-jump nnoremap <buffer> <silent> <C-q> :call g:AnyJumpHandleClose()<cr>
     au FileType any-jump nnoremap <buffer> <silent> <C-c> :call g:AnyJumpHandleClose()<cr>
     au FileType any-jump nnoremap <buffer> <silent> <M-q> :call g:AnyJumpHandleClose()<cr>
