@@ -664,7 +664,7 @@ fu! s:InternalBuffer.HelpSection() abort
     call self.AddLine([ self.CreateItem("help_text", "[o/<Enter>] open       [t/<C-t>] open in tab     [s/<C-x>] open in split    [v/<C-v>] open in vsplit", color) ])
     call self.AddLine([ self.CreateItem("help_text", "[a] load more results  [A] load all results      [r] show references        [T] group by file", color) ])
     call self.AddLine([ self.CreateItem("help_text", "[p/<Tab>] preview file                           [b/0/<C-home>] scroll to first result", color) ])
-    call self.AddLine([ self.CreateItem("help_text", "[L] toggle search results ui style               [<M-q>/<C-q>/q] exit", color) ])
+    call self.AddLine([ self.CreateItem("help_text", "[L] toggle search results ui style               [<M-q>/<C-q>/<C-c>] exit", color) ])
   endif
 endfu
 
