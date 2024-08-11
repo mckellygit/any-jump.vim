@@ -661,9 +661,13 @@ fu! s:VimPopupFilter(popup_winid, key) abort
     call g:AnyJumpHandleOpen('vsplit')
     return 1
 
-  elseif a:key ==# "q"
-        \ || a:key ==# "x"
-        \ || a:key ==# "\<C-q>"
+  " used to have q and x ...
+  "elseif a:key ==# "q"
+  "      \ || a:key ==# "x"
+  "  call g:AnyJumpHandleClose()
+  "  return 1
+
+  elseif a:key ==# "\<C-q>"
         \ || a:key ==# "\<F18>"
         \ || a:key ==# "\<C-c>"
     " TODO: skip <Esc> ?
@@ -1389,8 +1393,11 @@ if s:nvim
 
     au FileType any-jump nnoremap <buffer> <silent> p :call g:AnyJumpHandlePreview()<cr>
     au FileType any-jump nnoremap <buffer> <silent> <tab> :call g:AnyJumpHandlePreview()<cr>
-    au FileType any-jump nnoremap <buffer> <silent> q :call g:AnyJumpHandleClose()<cr>
-    au FileType any-jump nnoremap <buffer> <silent> x :call g:AnyJumpHandleClose()<cr>
+
+    " used to have q and x ...
+    "au FileType any-jump nnoremap <buffer> <silent> q :call g:AnyJumpHandleClose()<cr>
+    "au FileType any-jump nnoremap <buffer> <silent> x :call g:AnyJumpHandleClose()<cr>
+
     au FileType any-jump nnoremap <buffer> <silent> <C-q> :call g:AnyJumpHandleClose()<cr>
     au FileType any-jump nnoremap <buffer> <silent> <C-c> :call g:AnyJumpHandleClose()<cr>
     au FileType any-jump nnoremap <buffer> <silent> <M-q> :call g:AnyJumpHandleClose()<cr>
