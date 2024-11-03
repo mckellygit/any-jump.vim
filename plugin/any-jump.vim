@@ -756,6 +756,7 @@ fu! s:Jump(...) abort range
   try
 
     let ib = internal_buffer#GetClass().New()
+    let fzflist = []
 
     let ib.keyword                  = keyword
     let ib.language                 = lang
@@ -769,6 +770,16 @@ fu! s:Jump(...) abort range
       elseif len(ib.definitions_grep_results) == 1 && ib.definitions_grep_results[0].text == "empty$result"
           let ib.definitions_grep_results = []
       endif
+    endif
+
+    if (g:any_jump_use_fzf > 0) && len(ib.definitions_grep_results)
+        "echom ib.definitions_grep_results
+        let defvalues = items(ib.definitions_grep_results)
+        for k in defvalues
+            let ln = k[1].path . ':' . k[1].line_number . ':' . k[1].text
+            "let ln = k[1].path
+            call add(fzflist, ln)
+        endfor
     endif
 
     if g:any_jump_references_enabled || len(ib.definitions_grep_results) == 0
@@ -788,6 +799,17 @@ fu! s:Jump(...) abort range
           call add(ib.usages_grep_results, result)
         endif
       endfor
+
+      if (g:any_jump_use_fzf > 0) && len(ib.usages_grep_results)
+          "echom ib.usages_grep_results
+          let usevalues = items(ib.usages_grep_results)
+          for k in usevalues
+              let ln = k[1].path . ':' . k[1].line_number . ':' . k[1].text
+              "let ln = k[1].path
+              call add(fzflist, ln)
+          endfor
+      endif
+
     endif
 
   catch /Aborted-cmd/
@@ -807,7 +829,22 @@ fu! s:Jump(...) abort range
   " assign any-jump internal buffer to current tab
   let t:any_jump = ib
 
-  call s:CreateUi(ib)
+  if g:any_jump_use_fzf > 0
+
+      if len(fzflist) > 0
+          call fzf#run(fzf#wrap({
+            \  'source' : fzflist,
+            \  'options': '--bind=esc:ignore',
+            \  'tmux'   : '-p -x C -y C -w 80% -h 40%'
+            \  }))
+      endif
+
+  else
+
+    call s:CreateUi(ib)
+
+  endif
+
 endfu
 
 fu! s:JumpBack() abort
@@ -1078,6 +1115,121 @@ fu! g:AnyJumpLoadNextBatchResults() abort
   else
     call ui.RestorePopupCursor()
   endif
+endfu
+
+fu! g:AnyJumpHandlePreviewClose() abort
+  let ui          = s:GetCurrentInternalBuffer()
+  let action_item = ui.TryFindOriginalLinkFromPos()
+
+  let preview_actioned_on_self_link = v:false
+
+  " dispatch to other items handler
+  if type(action_item) == v:t_dict && action_item.type == 'more_button'
+    call g:AnyJumpLoadNextBatchResults()
+    return
+  endif
+
+  " remove all previews
+  if ui.preview_opened
+    let ui.preview_opened = v:false
+
+    let idx            = 0
+    let layer_start_ln = 0
+
+    call ui.StartUiTransaction()
+
+    let cx = 0
+    for line in ui.items
+      if line[0].type == 'preview_text'
+        for item in line
+          let item.gc = v:true " mark for destroy
+
+          if has_key(item.data, 'link') && item.data.link == action_item
+            let preview_actioned_on_self_link = v:true
+          endif
+        endfor
+
+        let prev_line = ui.items[idx - 1]
+
+        if !layer_start_ln
+          let layer_start_ln = idx + 1
+        endif
+
+        " remove from ui
+        call deletebufline(ui.vim_bufnr, layer_start_ln)
+        let cx += 1
+
+      elseif line[0].type == 'help_link'
+        " not implemeted
+      else
+        let layer_start_ln = 0
+      endif
+
+      let idx += 1
+    endfor
+
+    call ui.RemoveGarbagedLines()
+    call ui.EndUiTransaction()
+
+    " hack to help correct line after preview close
+    "echom "cx: " . cx
+    if !has("nvim") && g:oline != 0
+        let cline = line(".", ui.popup_winid)
+        let g:delta = cline - g:oline
+        "echom "d: " . g:delta . "cx: " . cx
+        if g:delta > 0
+            if g:delta > cx
+                let g:delta = cx
+            endif
+            let adj = ""
+            for i in range(1,g:delta)
+                let adj .= "k\<C-y>"
+            endfor
+            "echo "adj: " . adj
+            call feedkeys(adj, "n")
+            redraw!
+        endif
+
+        if cline < g:oline
+            let g:oline = cline
+        else
+            let d2 = cline - (g:oline + cx)
+            if d2 <= 0
+                return
+            else
+                let g:oline = line(".", ui.popup_winid)
+            endif
+        endif
+    endif
+
+  elseif !has("nvim")
+      let g:oline = line(".", ui.popup_winid)
+  endif
+
+  if !has("nvim")
+      let cline = line(".", ui.popup_winid)
+      let bline = line("w$", ui.popup_winid)
+      let d3 = bline - cline
+      if d3 <= g:any_jump_preview_lines_count + 2
+          let d4 = (g:any_jump_preview_lines_count + 3) - d3
+          if g:delta > 0
+              let d4 -= g:delta
+          endif
+          if d4 > 0
+              let adj = "silent normal! " . d4 . "\<C-e>"
+              call win_execute(ui.popup_winid, adj)
+              redraw!
+          endif
+      endif
+  endif
+
+  " if clicked on just opened preview
+  " then just close, not open again
+  " if index(current_previewed_links, action_item) != -1
+  if preview_actioned_on_self_link
+    return
+  endif
+
 endfu
 
 fu! g:AnyJumpToggleAllResults() abort
@@ -1425,6 +1577,7 @@ if s:nvim
 
     au FileType any-jump nmap <buffer> <silent> <Up>   k
     au FileType any-jump nmap <buffer> <silent> <Down> j
+    "au FileType any-jump nmap <buffer> <silent> <Down> :call g:AnyJumpHandlePreviewClose()<cr><C-j>:call g:AnyJumpHandlePreview()<cr>
 
     au FileType any-jump nnoremap <silent> <buffer> <M-C-P> :call g:AnyJumpHandlePreview()<CR>
     au FileType any-jump nnoremap <silent> <buffer> <C-Bslash> :silent set nowrap! nowrap?<CR>
