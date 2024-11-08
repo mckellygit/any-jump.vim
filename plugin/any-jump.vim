@@ -772,7 +772,7 @@ fu! s:Jump(...) abort range
       endif
     endif
 
-    if (exists('g:any_jump_use_fzf')) && (g:any_jump_use_fzf > 0) && len(ib.definitions_grep_results)
+    if exists('g:any_jump_use_fzf') && (g:any_jump_use_fzf > 0) && len(ib.definitions_grep_results)
         "echom ib.definitions_grep_results
         let defvalues = items(ib.definitions_grep_results)
         for k in defvalues
@@ -800,7 +800,7 @@ fu! s:Jump(...) abort range
         endif
       endfor
 
-      if (exists('g:any_jump_use_fzf')) && (g:any_jump_use_fzf > 0) && len(ib.usages_grep_results)
+      if exists('g:any_jump_use_fzf') && (g:any_jump_use_fzf > 0) && len(ib.usages_grep_results)
           "echom ib.usages_grep_results
           let usevalues = items(ib.usages_grep_results)
           for k in usevalues
@@ -829,7 +829,7 @@ fu! s:Jump(...) abort range
   " assign any-jump internal buffer to current tab
   let t:any_jump = ib
 
-  if g:any_jump_use_fzf > 0
+  if exists('g:any_jump_use_fzf') && (g:any_jump_use_fzf > 0)
 
       if len(fzflist) > 0
           call fzf#run(fzf#wrap({
