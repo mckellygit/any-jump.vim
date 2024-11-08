@@ -772,7 +772,7 @@ fu! s:Jump(...) abort range
       endif
     endif
 
-    if (g:any_jump_use_fzf > 0) && len(ib.definitions_grep_results)
+    if (exists('g:any_jump_use_fzf')) && (g:any_jump_use_fzf > 0) && len(ib.definitions_grep_results)
         "echom ib.definitions_grep_results
         let defvalues = items(ib.definitions_grep_results)
         for k in defvalues
@@ -800,7 +800,7 @@ fu! s:Jump(...) abort range
         endif
       endfor
 
-      if (g:any_jump_use_fzf > 0) && len(ib.usages_grep_results)
+      if (exists('g:any_jump_use_fzf')) && (g:any_jump_use_fzf > 0) && len(ib.usages_grep_results)
           "echom ib.usages_grep_results
           let usevalues = items(ib.usages_grep_results)
           for k in usevalues
