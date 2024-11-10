@@ -189,6 +189,38 @@ endif
 " Functions
 " ----------------------------------------------
 
+function! s:getlines(line)
+    let parts = split(a:line, ':')
+    return {'filename': parts[0], 'lnum': parts[1], 'col': parts[2],
+          \ 'text': join(parts[3:], ':')}
+endfunction
+
+function s:myopen(lines)
+    " if we have sink* then this is the whole list, with sink its just what is selected
+    " ['file.cpp:1690:21:symbol(arg1, arg2);']
+    "let l = split(a:e[0], ':')
+    " l[0] is filename
+    " l[1] is line number
+    " l[2] is column number
+    " l[3] is text
+    "execute 'tabedit +' . l[1] . ' ' . l[0]
+    if len(a:lines) < 2
+        return
+    endif
+
+    let cmd = get({'ctrl-x': 'split',
+                 \ 'ctrl-v': 'vertical split',
+                 \ 'ctrl-t': 'tabe'}, a:lines[0], 'e')
+
+    let list = map(a:lines[1:], 's:getlines(v:val)')
+
+    let first = list[0]
+
+    execute cmd escape(first.filename, ' %#\')
+    execute first.lnum
+    execute 'normal!' first.col.'|zz'
+endfunction
+
 fu! s:CreateUi(internal_buffer) abort
 
   " before creating a new lookup buffer check if
@@ -834,8 +866,9 @@ fu! s:Jump(...) abort range
       if len(fzflist) > 0
           call fzf#run(fzf#wrap({
             \  'source' : fzflist,
-            \  'options': '--bind=esc:ignore',
-            \  'tmux'   : '-p -x C -y C -w 80% -h 40%'
+            \  'sink*'  : function('s:myopen'),
+            \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--nth', '4..', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
+            \  'tmux'   : '-p -x C -y C -w 90% -h 80%'
             \  }))
       endif
 
