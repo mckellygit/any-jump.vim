@@ -864,12 +864,28 @@ fu! s:Jump(...) abort range
   if exists('g:any_jump_use_fzf') && (g:any_jump_use_fzf > 0)
 
       if len(fzflist) > 0
-          call fzf#run(fzf#wrap({
-            \  'source' : fzflist,
-            \  'sink*'  : function('s:myopen'),
-            \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--nth', '4..', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
-            \  'tmux'   : '-p -x C -y C -w 90% -h 80%'
-            \  }))
+
+          if exists('$TMUX_PANE')
+
+              call fzf#run(fzf#wrap({
+                  \  'source' : fzflist,
+                  \  'sink*'  : function('s:myopen'),
+                  \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
+                  \  'tmux'   : '-p -x C -y C -w 90% -h 80%'
+                  \  }))
+
+          else
+
+              " use vim popup ...
+              call fzf#run(fzf#wrap({
+                  \  'source' : fzflist,
+                  \  'sink*'  : function('s:myopen'),
+                  \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
+                  \  'window' : { 'width': 0.9, 'height': 0.8, 'yoffset': 0.5, 'xoffset': 0.5 }
+                  \  }))
+
+          endif
+
       endif
 
   else
