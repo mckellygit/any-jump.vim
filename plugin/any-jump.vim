@@ -870,7 +870,7 @@ fu! s:Jump(...) abort range
               call fzf#run(fzf#wrap({
                   \  'source' : fzflist,
                   \  'sink*'  : function('s:myopen'),
-                  \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
+                  \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'nohidden:up:wrap:+{2}-/2:~1'],
                   \  'tmux'   : '-p -x C -y C -w 90% -h 80%'
                   \  }))
 
@@ -880,7 +880,7 @@ fu! s:Jump(...) abort range
               call fzf#run(fzf#wrap({
                   \  'source' : fzflist,
                   \  'sink*'  : function('s:myopen'),
-                  \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'hidden:up:wrap:+{2}-/2'],
+                  \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'nohidden:up:wrap:+{2}-/2:~1'],
                   \  'window' : { 'width': 0.9, 'height': 0.8, 'yoffset': 0.5, 'xoffset': 0.5 }
                   \  }))
 
