@@ -191,8 +191,7 @@ endif
 
 function! s:getlines(line)
     let parts = split(a:line, ':')
-    return {'filename': parts[0], 'lnum': parts[1], 'col': parts[2],
-          \ 'text': join(parts[3:], ':')}
+    return {'filename': parts[0], 'lnum': parts[1], 'text': join(parts[2:], ':')}
 endfunction
 
 function s:myopen(lines)
@@ -218,7 +217,11 @@ function s:myopen(lines)
 
     execute cmd escape(first.filename, ' %#\')
     execute first.lnum
-    execute 'normal!' first.col.'|zz'
+    " no columns ...
+    "execute 'normal!' first.col.'|zz'
+    if g:any_jump_center_screen_after_jump == v:true
+        execute 'norm! zz'
+    endif
 endfunction
 
 fu! s:CreateUi(internal_buffer) abort
