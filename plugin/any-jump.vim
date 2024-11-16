@@ -868,7 +868,7 @@ fu! s:Jump(...) abort range
 
       if len(fzflist) > 0
 
-          if exists('$TMUX_PANE')
+          if exists('$TMUX_PANE_XXX')
 
               call fzf#run(fzf#wrap({
                   \  'source' : fzflist,
