@@ -244,6 +244,62 @@ fu! s:CreateUi(internal_buffer) abort
   endif
   " --------------------------------------------
 
+  if exists('g:any_jump_use_fzf') && (g:any_jump_use_fzf > 0)
+
+    let ib = a:internal_buffer
+    let fzflist = []
+
+    if len(ib.definitions_grep_results)
+        "echom ib.definitions_grep_results
+        let defvalues = items(ib.definitions_grep_results)
+        for k in defvalues
+            let ln = k[1].path . ':' . k[1].line_number . ':' . k[1].text
+            "let ln = k[1].path
+            call add(fzflist, ln)
+        endfor
+    endif
+
+    if g:any_jump_references_enabled || len(ib.definitions_grep_results) == 0
+      if len(ib.usages_grep_results)
+          "echom ib.usages_grep_results
+          let usevalues = items(ib.usages_grep_results)
+          for k in usevalues
+              let ln = k[1].path . ':' . k[1].line_number . ':' . k[1].text
+              "let ln = k[1].path
+              call add(fzflist, ln)
+          endfor
+      endif
+    endif
+
+    if len(fzflist) > 0
+
+      if exists('$TMUX_PANE_XXX')
+
+          call fzf#run(fzf#wrap({
+              \  'source' : fzflist,
+              \  'sink*'  : function('s:myopen'),
+              \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'nohidden:up:wrap:noinfo:+100/2'],
+              \  'tmux'   : '-p -x C -y C -w 90% -h 80%'
+              \  }))
+
+      else
+
+          " use vim popup ...
+          call fzf#run(fzf#wrap({
+              \  'source' : fzflist,
+              \  'sink*'  : function('s:myopen'),
+              \  'options': ['--bind=esc:ignore', '--expect=ctrl-t,ctrl-v,ctrl-x', '--delimiter', ':', '--keep-right', '--preview', '~/bin/fzf_preview.sh {}', '--preview-window', 'nohidden:up:wrap:noinfo:+100/2'],
+              \  'window' : { 'width': 0.9, 'height': 0.8, 'yoffset': 0.5, 'xoffset': 0.5 }
+              \  }))
+
+      endif
+
+    endif
+
+    return
+
+  endif
+
   if s:nvim
     call s:CreateNvimUi(a:internal_buffer)
   else
