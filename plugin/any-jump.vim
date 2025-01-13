@@ -985,7 +985,14 @@ fu! s:JumpLastResults() abort
   if exists('t:any_jump') " TODO: check for buffer visibility here
     let t:any_jump.source_win_id = winnr()
     call s:CreateUi(t:any_jump)
+    return
   endif
+
+  redraw!
+  echohl Statement | echo "no previous any-jump results found" | echohl None
+  sleep 800m
+  redraw!
+  echo " "
 endfu
 
 " ----------------------------------------------
