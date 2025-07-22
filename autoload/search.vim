@@ -541,14 +541,25 @@ fu! s:ParseRgResults(raw_results) abort
         let data = get(match, 'data')
 
         if type(data) == v:t_dict
+
           " mck - not sure how/why but if no text in dict then continue on ...
           try
             let text = data.lines.text
           catch /E716/
             continue
           endtry
-          let text = substitute(text, '^\s*', '', 'g')
-          let text = substitute(text, '\n', '', 'g')
+
+          " mck - can we convert blob to string ?
+          if type(text) == v:t_blob
+              continue
+          endif
+
+          try
+            let text = substitute(text, '^\s*', '', 'g')
+            let text = substitute(text, '\n', '', 'g')
+          catch /E1976/
+            continue
+          endtry
 
           let grep_result             = s:NewGrepResult()
           let grep_result.line_number = data.line_number
